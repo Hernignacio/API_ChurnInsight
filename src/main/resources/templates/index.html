@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Análisis de Churn</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+
+<div class="container">
+
+    <header class="header">
+        <h1>Análisis de Churn</h1>
+        <p>Predicción Inteligente de Cancelamiento de Clientes</p>
+    </header>
+
+    <div class="card">
+        <h2>📊 Datos del Cliente</h2>
+
+        <form id="churnForm">
+
+            <label>Tiempo de Contrato (meses)</label>
+            <input type="number" id="tiempoContratoMeses" placeholder="Ej: 12" required>
+
+            <label>Retrasos de Pago</label>
+            <input type="number" id="retrasosPago" placeholder="Ej: 2" required>
+
+            <label>Uso Mensual Promedio</label>
+            <input type="number" step="0.1" id="usoMensual" placeholder="Ej: 14.5" required>
+
+            <label>Tipo de Plan</label>
+            <select id="plan" required>
+                <option value="">Seleccionar plan...</option>
+                <option value="Basic">Basic</option>
+                <option value="Standard">Standard</option>
+                <option value="Premium">Premium</option>
+            </select>
+
+            <button type="submit">ANALIZAR CLIENTE</button>
+        </form>
+
+        <div id="resultado" class="resultado hidden"></div>
+    </div>
+
+</div>
+
+<script src="/js/app.js"></script>
+</body>
+</html>
