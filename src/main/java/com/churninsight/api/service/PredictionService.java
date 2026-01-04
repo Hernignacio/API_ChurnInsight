@@ -1,35 +1,58 @@
 package com.churninsight.api.service;
 
-import com.churninsight.api.dto.ChurnRequestDTO;
-import com.churninsight.api.dto.ClientProfileDTO;
+import com.churninsight.api.dto.ModelDataDTO;
+import com.churninsight.api.dto.ModelPredictionDTO;
 import com.churninsight.api.dto.PredictionResponseDTO;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+
+import java.util.List;
+import java.util.Map;
 
 @Service
 public class PredictionService {
 
-    public PredictionResponseDTO predict(ChurnRequestDTO req) {
+    private final RestTemplate restTemplate = new RestTemplate();
 
-        double score = 0;
+    private static final String MODEL_PREDICT_URL =
+            "http://168.197.48.239:8000/predict";
 
-        if (req.getWatch_hours() < 2) score += 0.3;
-        if (req.getLast_login_days() > 20) score += 0.4;
-        if ("Basic".equals(req.getSubscription_type())) score += 0.2;
+    private static final String MODEL_ID_URL =
+            "http://168.197.48.239:8000/item/predictions/";
 
-        double prob = Math.min(score, 1.0);
-
-        ClientProfileDTO client = new ClientProfileDTO(
-                req.getAge(),
-                req.getGender(),
-                req.getSubscription_type(),
-                req.getWatch_hours(),
-                req.getLast_login_days(),
-                "N/A"
+    // FORMULARIO MANUAL
+    public ModelPredictionDTO predict(ModelDataDTO request) {
+        return restTemplate.postForObject(
+                MODEL_PREDICT_URL,
+                request,
+                ModelPredictionDTO.class
         );
+    }
+
+    // BÚSQUEDA POR ID
+    public PredictionResponseDTO predictByPublicId(String publicId) {
+
+        String url = MODEL_ID_URL + publicId;
+
+        ResponseEntity<Map> response =
+                restTemplate.getForEntity(url, Map.class);
+
+        Map body = response.getBody();
+
+        Map prediction = (Map) body.get("prediction");
+        Map probabilities = (Map) prediction.get("probabilities");
+
+        int pred = (int) prediction.get("prediction");
+        double churnProb =
+                ((Number) probabilities.get("churn")).doubleValue();
+
+        Map client =
+                ((List<Map>) body.get("data")).get(0);
 
         return new PredictionResponseDTO(
-                prob > 0.5 ? "Cancela" : "No cancela",
-                prob,
+                pred,
+                churnProb,
                 client
         );
     }

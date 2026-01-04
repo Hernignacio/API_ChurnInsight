@@ -1,7 +1,7 @@
 package com.churninsight.api.controller;
 
-import com.churninsight.api.dto.ChurnRequestDTO;
-import com.churninsight.api.dto.ClientProfileDTO;
+import com.churninsight.api.dto.ModelDataDTO;
+import com.churninsight.api.dto.ModelPredictionDTO;
 import com.churninsight.api.dto.PredictionResponseDTO;
 import com.churninsight.api.service.PredictionService;
 import org.springframework.web.bind.annotation.*;
@@ -17,31 +17,17 @@ public class PredictionController {
         this.predictionService = predictionService;
     }
 
+    //predicción manual
     @PostMapping
-    public PredictionResponseDTO predict(
-            @RequestBody ChurnRequestDTO request) {
-
+    public ModelPredictionDTO predict(@RequestBody ModelDataDTO request) {
         return predictionService.predict(request);
     }
 
-    @GetMapping("/client/{id}")
-    public PredictionResponseDTO predictByClientId(@PathVariable String id) {
+    //predicción por id cliente
+    @GetMapping("/client/{publicId}")
+    public PredictionResponseDTO predictByPublicId(
+            @PathVariable String publicId) {
 
-        // MOCK de datos cargados desde "modelo"
-        ClientProfileDTO client = new ClientProfileDTO(
-                52,
-                "Other",
-                "Basic",
-                1.1,
-                30,
-                "Asia"
-        );
-
-        return new PredictionResponseDTO(
-                "Cancela",
-                0.78,
-                client
-        );
+        return predictionService.predictByPublicId(publicId);
     }
-
 }

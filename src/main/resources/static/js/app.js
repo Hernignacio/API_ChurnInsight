@@ -23,7 +23,8 @@ document.getElementById("churnForm").addEventListener("submit", async function (
         gender: document.getElementById("gender").value,
         subscription_type: document.getElementById("subscription_type").value,
         watch_hours: parseFloat(document.getElementById("watch_hours").value),
-        last_login_days: parseInt(document.getElementById("last_login_days").value)
+        last_login_days: parseInt(document.getElementById("last_login_days").value),
+        region: document.getElementById("region").value
     };
 
     // 🔹 API Preview
@@ -36,9 +37,12 @@ Content-Type: application/json
   "gender": "${data.gender}",
   "subscription_type": "${data.subscription_type}",
   "watch_hours": ${data.watch_hours},
-  "last_login_days": ${data.last_login_days}
+  "last_login_days": ${data.last_login_days},
+  "region": "${data.region}"
 }
 `;
+
+
 
     try {
         const response = await fetch("http://localhost:8080/predict", {
@@ -49,14 +53,22 @@ Content-Type: application/json
 
         const result = await response.json();
 
+        console.log("Respuesta API:", result);
+
         document.getElementById("resultado").classList.remove("hidden");
         document.getElementById("resultado").innerHTML = `
-            <h3>Resultado</h3>
-            <p><strong>Predicción:</strong> ${result.prevision}</p>
-            <p><strong>Probabilidad:</strong> ${(result.probabilidad * 100).toFixed(2)}%</p>
+          <h3>Resultado</h3>
+          <p><strong>Predicción:</strong>
+             ${result.prediction === 1 ? "Cancela" : "No Cancela"}
+          </p>
+          <p><strong>Probabilidad de churn:</strong>
+             ${(result.probabilities.churn * 100).toFixed(2)}%
+          </p>
         `;
-    } catch {
+
+    } catch (error) {
         alert("Error al conectar con la API");
+        console.error(error);
     }
 });
 
@@ -64,32 +76,32 @@ Content-Type: application/json
 async function buscarCliente() {
     const id = document.getElementById("clientId").value;
 
-    if (!id) {
-        alert("Ingresa un ID de cliente");
-        return;
-    }
-
-    const response = await fetch(`/predict/client/${id}`);
+    const response = await fetch(`http://localhost:8080/predict/client/${id}`);
     const result = await response.json();
 
     const div = document.getElementById("resultadoBusqueda");
     div.classList.remove("hidden");
-div.innerHTML = `
-    <h3>Resultado Cliente ${id}</h3>
 
-    <p><strong>Predicción:</strong> ${result.prevision}</p>
-    <p><strong>Probabilidad:</strong> ${(result.probabilidad * 100).toFixed(2)}%</p>
+    div.innerHTML = `
+        <h3>Resultado Cliente ${id}</h3>
 
-    <hr>
+        <p><strong>Predicción:</strong>
+            ${result.prediction === 1 ? "Cancela" : "No Cancela"}
+        </p>
+        <p><strong>Probabilidad:</strong>
+            ${(result.probability * 100).toFixed(2)}%
+        </p>
 
-    <h4>📋 Perfil del Cliente</h4>
-    <p><strong>Edad:</strong> ${result.client.age}</p>
-    <p><strong>Género:</strong> ${result.client.gender}</p>
-    <p><strong>Suscripción:</strong> ${result.client.subscription_type}</p>
-    <p><strong>Horas de visualización:</strong> ${result.client.watch_hours}</p>
-    <p><strong>Días desde último login:</strong> ${result.client.last_login_days}</p>
-    <p><strong>Región:</strong> ${result.client.region}</p>
-`;
+        <hr>
+
+        <h4>📋 Perfil del Cliente</h4>
+        <p><strong>Edad:</strong> ${result.client.age}</p>
+        <p><strong>Género:</strong> ${result.client.gender}</p>
+        <p><strong>Suscripción:</strong> ${result.client.subscription_type}</p>
+        <p><strong>Horas:</strong> ${result.client.watch_hours}</p>
+        <p><strong>Días sin login:</strong> ${result.client.last_login_days}</p>
+        <p><strong>Región:</strong> ${result.client.region}</p>
+    `;
 }
 
 // ---------- ESTADÍSTICAS ----------

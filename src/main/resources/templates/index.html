@@ -67,6 +67,17 @@
                     <label>Días desde último login</label>
                     <input type="number" id="last_login_days" placeholder="Ej: 30" required>
 
+                    <label>Región</label>
+                    <select id="region" required>
+                        <option value="">Seleccionar...</option>
+                        <option value="Africa">Africa</option>
+                        <option value="Europe">Europa</option>
+                        <option value="Asia">Asia</option>
+                        <option value="Oceania">Oceania</option>
+                        <option value="SouthAmerica">Sudamerica</option>
+                        <option value="NorthAmerica">América del Norte </option>
+                    </select>
+
                     <button type="submit">ANALIZAR CLIENTE</button>
                 </form>
 
@@ -88,8 +99,12 @@ Content-Type: application/json
   "gender": "",
   "subscription_type": "",
   "watch_hours": 0,
-  "last_login_days": 0
+  "last_login_days": 0,
+  "region": ""
+
 }
+
+
 </pre>
 
             </div>
@@ -103,7 +118,7 @@ Content-Type: application/json
         <h2>🔍 Búsqueda de Cliente</h2>
 
         <label>ID del Cliente</label>
-        <input type="text" id="clientId" placeholder="Ej: CL-123">
+        <input type="text" id="clientId" placeholder="Ej: CUS-6BF81F27">
 
         <button onclick="buscarCliente()">BUSCAR CLIENTE</button>
 
