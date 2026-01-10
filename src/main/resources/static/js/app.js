@@ -288,6 +288,7 @@ async function exportChartsToPDF() {
         // Añadir logo en esquina superior izquierda (10pt desde bordes)
         const margin = 40; // margen en puntos
         const pageWidth = doc.internal.pageSize.getWidth();
+        const pageHeight = doc.internal.pageSize.getHeight();
         // logo tamaño en pt
         const logoW = 60;
         const logoH = 60;
@@ -295,17 +296,33 @@ async function exportChartsToPDF() {
             doc.addImage(logoImg, 'PNG', margin, margin - 10, logoW, logoH);
         }
 
-        // Título: "Análisis Carter Clientes" centrado, color negro
+        // Título principal: "Análisis Carter Clientes" centrado, color negro
+        doc.setFont('helvetica', 'normal');
         doc.setFontSize(18);
         doc.setTextColor(0, 0, 0);
-        const title = 'Análisis Carter Clientes';
-        const titleWidth = doc.getTextWidth(title);
-        doc.text(title, (pageWidth - titleWidth) / 2, margin + 15);
+        const mainTitle = 'Análisis Carter Clientes';
+        const mainTitleWidth = doc.getTextWidth(mainTitle);
+        doc.text(mainTitle, (pageWidth - mainTitleWidth) / 2, margin + 15);
+
+        // Título del gráfico: en la parte superior, en negrita y un poco más grande
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(14);
+        const chartTitles = {
+            'chartRiesgo': 'Churn por Género',
+            'chartSubscription': 'Churn por Suscripción',
+            'chartRegion': 'Churn por Región',
+            'chartAge': 'Churn por Edad'
+        };
+        const chartTitle = chartTitles[id] || '';
+        const chartTitleWidth = doc.getTextWidth(chartTitle);
+        const chartTitleY = margin + 45; // justo debajo del título principal
+        doc.text(chartTitle, (pageWidth - chartTitleWidth) / 2, chartTitleY);
 
         // Insertar la imagen del gráfico centrada
         // Calcular área disponible (restando top area y márgenes)
+        const topOffset = chartTitleY + 10; // dejar algo de espacio entre título y gráfico
         const availableWidth = pageWidth - margin * 2;
-        const availableHeight = doc.internal.pageSize.getHeight() - (margin * 2 + 80);
+        const availableHeight = pageHeight - topOffset - margin;
 
         // Crear imagen con tamaño proporcional
         // Primero se crea un objeto Image para obtener dimensiones
@@ -318,24 +335,14 @@ async function exportChartsToPDF() {
             imgH = imgH * ratio;
 
             const x = (pageWidth - imgW) / 2;
-            const y = margin + 50; // dejar espacio para logo y título
+            const y = topOffset;
 
             doc.addImage(dataUrl, 'PNG', x, y, imgW, imgH);
 
-            // Añadir título del gráfico en color negro bajo la imagen
+            // (antes el título del gráfico estaba debajo; ahora lo colocamos arriba)
+            // Restaurar fuente normal para el resto
+            doc.setFont('helvetica', 'normal');
             doc.setFontSize(12);
-            doc.setTextColor(0, 0, 0);
-            // Obtener título del chart desde el canvas id mapping
-            const chartTitles = {
-                'chartRiesgo': 'Churn por Género',
-                'chartSubscription': 'Churn por Suscripción',
-                'chartRegion': 'Churn por Región',
-                'chartAge': 'Churn por Edad'
-            };
-            const chartTitle = chartTitles[id] || '';
-            const titleY = y + imgH + 20;
-            const chartTitleWidth = doc.getTextWidth(chartTitle);
-            doc.text(chartTitle, (pageWidth - chartTitleWidth) / 2, titleY);
         }
     }
 
