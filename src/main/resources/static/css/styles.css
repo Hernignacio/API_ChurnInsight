@@ -180,10 +180,36 @@ button:hover {
     box-shadow: 0 5px 15px rgba(0, 198, 255, 0.4);
 }
 
+/* Botón pequeño en esquina para exportar */
+.stats-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.export-btn {
+    width: auto;
+    padding: 8px 12px;
+    background: #2ecc71;
+    border-radius: 6px;
+    color: #ffffff;
+    font-weight: bold;
+    border: none;
+}
+
+.export-btn:hover {
+    background: #27ae60;
+}
+
 .hidden {
     display: none;
 }
 
+.error {
+    color: #ff6b6b;
+    font-weight: bold;
+}
 
 /*RESPONSIVE*/
 @media (max-width: 900px) {
