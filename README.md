@@ -264,23 +264,52 @@ funcionamiento correcto de las predicciones y estadísticas.
 
 <hr/>
 
-<h2>📁 Archivos modificados (nuevas funcionalidades)</h2>
+<h2>🆕 Novedades (Últimos cambios)</h2>
+
+<p>Se han implementado las siguientes mejoras y funcionalidades en la aplicación:</p>
 
 <ul>
-  <li><code>src/main/resources/templates/index.html</code> — botón "Exportar a PDF" y carga de jsPDF (CDN).</li>
-  <li><code>src/main/resources/static/js/app.js</code> — función <code>exportChartsToPDF()</code> y helper <code>loadImage()</code>.</li>
-  <li><code>src/main/resources/static/css/styles.css</code> — estilos para el botón <code>.export-btn</code> y clase <code>.error</code>.</li>
-  <li>(Previo) <code>src/main/java/com/churninsight/api/service/PredictionService.java</code> — manejo de 404 del servicio externo y reenvío de detalle en la respuesta.</li>
-  <li>(Previo) <code>src/main/java/com/churninsight/api/exception/ApiExceptionHandler.java</code> — handler para propagar mensajes de error personalizados.</li>
+    <li>
+        <b>Manejo de errores 404 del microservicio ML</b> — El backend ahora captura errores de cliente (p. ej. <code>404 Not Found</code>) que vienen del microservicio de predicción y devuelve una respuesta JSON estándar con el campo <code>message</code>. La UI (pantalla de búsqueda) muestra ese mensaje directamente al usuario en lugar de un error genérico.
+    </li>
+    <li>
+        <b>Exportar gráficas a PDF</b> — En la sección <i>Análisis Avanzado</i> hay ahora un botón <b>Exportar PDF</b> (arriba a la derecha). Características:
+        <ul>
+            <li>Título del PDF: <b>"Análisis de Cartera de Clientes"</b> (aparece centrado en la primera página).</li>
+            <li>Nombre del archivo: <code>Churnsight_DracoStack_HHMMSS.pdf</code> (se añade la hora, minutos y segundos de generación).</li>
+            <li>Incluye el logo del equipo en la esquina izquierda del PDF (usa <code>/img/logo.png</code> si está disponible).</li>
+            <li>Los títulos de cada gráfico en el PDF se dibujan en color <b>negro oscuro</b> y sin efectos (se suprimen los estilos que pudiera traer la representación en pantalla para evitar títulos poco visibles).</li>
+            <li>El botón se habilita automáticamente cuando las gráficas han terminado de cargarse.</li>
+            <li>Se generan páginas adicionales automáticamente si las imágenes no caben en una sola página.</li>
+        </ul>
+    </li>
 </ul>
 
-<hr/>
+<h3>Archivos modificados (resumen)</h3>
+<ul>
+    <li><code>src/main/java/com/churninsight/api/exception/ApiExceptionHandler.java</code> — Manejo específico de <code>HttpClientErrorException</code> y conversión del body a JSON con <code>message</code>.</li>
+    <li><code>src/main/resources/static/js/app.js</code> — Actualizaciones: manejo de errores en la búsqueda, función <code>exportChartsToPDF()</code> (usa <code>jsPDF</code>, incluye logo, título, nombres con timestamp y títulos negros) y habilitación del botón export tras carga de gráficas.</li>
+    <li><code>src/main/resources/templates/index.html</code> — UI: botón <i>Exportar PDF</i> en la cabecera de la sección de estadísticas y carga de la librería <code>jsPDF</code> desde CDN.</li>
+</ul>
 
-<h2>⚠️ Notas técnicas y pruebas</h2>
+<h3>Cómo probar (rápido)</h3>
+
+<ol>
+    <li>Levanta la aplicación (desde la raíz del proyecto):
+    <pre><code>.\\mvnw.cmd spring-boot:run</code></pre>
+    </li>
+    <li>Abre en tu navegador: <code>http://localhost:8080</code></li>
+    <li>Ve a la pestaña <b>Análisis Avanzado</b> y espera a que las gráficas se carguen (el botón <b>Exportar PDF</b> se habilitará).</li>
+    <li>Haz clic en <b>Exportar PDF</b>. Se descargará un archivo con nombre tipo <code>Churnsight_DracoStack_142530.pdf</code>.</li>
+    <li>Para probar la búsqueda por ID que devuelva 404, usa la pestaña <b>Búsqueda</b>, ingresa un ID inexistente (p. ej. <code>CUS-6BF81F28</code>) y confirma que el mensaje devuelto por el servicio externo aparece en la sección de resultado.</li>
+</ol>
+
+<h3>Notas y consideraciones</h3>
 
 <ul>
-  <li>La generación del PDF usa la API <code>canvas.toDataURL()</code> para convertir cada gráfico a imagen y luego la inserta en el PDF. Si la imagen del canvas viene de recursos cross-origin sin CORS esto puede fallar.</li>
-  <li>Se probó la compilación y arranque del proyecto con el wrapper Maven incluido (comando <code>.\\\mvnw.cmd -q test</code> en Windows) para verificar que los cambios no introdujeron errores de build.</li>
+    <li><b>Logo y CORS:</b> El logo se carga desde <code>/img/logo.png</code> y se inyecta en el PDF usando un canvas temporal; si el logo no aparece es probable que se trate de un problema de CORS si el recurso se sirve desde otro origen. Solución alternativa: incrustar el logo como data URI (base64) en el código para evitar restricciones.</li>
+    <li><b>Visibilidad de títulos en PDF:</b> Para evitar efectos o estilos no deseados que provengan del render del canvas, la exportación oculta temporalmente el título dibujado por Chart.js y lo escribe manualmente en el PDF en color negro y con fuente normal.</li>
+    <li><b>Dependencias JS:</b> La exportación usa <code>jsPDF</code> cargado desde CDN (incluido en <code>index.html</code>). Si quieres empaquetar la librería localmente o usar una versión distinta, puedo ayudarte a integrarla en los assets del proyecto.</li>
 </ul>
 
 <hr/>
