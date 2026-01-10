@@ -255,3 +255,100 @@ function dibujarGrafica(
 
     charts[id] = new Chart(ctx, config);
 }
+
+// Exportar gráficos a PDF: 1 gráfico por hoja, título y logo
+async function exportChartsToPDF() {
+    // Asegurarse que los charts existan
+    const canvasIds = ["chartRiesgo", "chartSubscription", "chartRegion", "chartAge"];
+
+    // Acceder a jsPDF UMD (window.jspdf)
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+
+    // Cargar logo como Image
+    const logoUrl = '/img/logo.png';
+    const logoImg = await loadImage(logoUrl).catch(() => null);
+
+    const now = new Date();
+    const hh = String(now.getHours()).padStart(2, '0');
+    const mm = String(now.getMinutes()).padStart(2, '0');
+    const ss = String(now.getSeconds()).padStart(2, '0');
+    const filename = `Analisis_Cartera_DracoStack_Churnsight_${hh}${mm}${ss}.pdf`;
+
+    for (let i = 0; i < canvasIds.length; i++) {
+        const id = canvasIds[i];
+        const canvas = document.getElementById(id);
+        if (!canvas) continue;
+
+        // Convertir canvas a dataURL PNG
+        const dataUrl = canvas.toDataURL('image/png', 1.0);
+
+        if (i > 0) doc.addPage();
+
+        // Añadir logo en esquina superior izquierda (10pt desde bordes)
+        const margin = 40; // margen en puntos
+        const pageWidth = doc.internal.pageSize.getWidth();
+        // logo tamaño en pt
+        const logoW = 60;
+        const logoH = 60;
+        if (logoImg) {
+            doc.addImage(logoImg, 'PNG', margin, margin - 10, logoW, logoH);
+        }
+
+        // Título: "Análisis Carter Clientes" centrado, color negro
+        doc.setFontSize(18);
+        doc.setTextColor(0, 0, 0);
+        const title = 'Análisis Carter Clientes';
+        const titleWidth = doc.getTextWidth(title);
+        doc.text(title, (pageWidth - titleWidth) / 2, margin + 15);
+
+        // Insertar la imagen del gráfico centrada
+        // Calcular área disponible (restando top area y márgenes)
+        const availableWidth = pageWidth - margin * 2;
+        const availableHeight = doc.internal.pageSize.getHeight() - (margin * 2 + 80);
+
+        // Crear imagen con tamaño proporcional
+        // Primero se crea un objeto Image para obtener dimensiones
+        const img = await loadImage(dataUrl).catch(() => null);
+        if (img) {
+            let imgW = img.width;
+            let imgH = img.height;
+            const ratio = Math.min(availableWidth / imgW, availableHeight / imgH);
+            imgW = imgW * ratio;
+            imgH = imgH * ratio;
+
+            const x = (pageWidth - imgW) / 2;
+            const y = margin + 50; // dejar espacio para logo y título
+
+            doc.addImage(dataUrl, 'PNG', x, y, imgW, imgH);
+
+            // Añadir título del gráfico en color negro bajo la imagen
+            doc.setFontSize(12);
+            doc.setTextColor(0, 0, 0);
+            // Obtener título del chart desde el canvas id mapping
+            const chartTitles = {
+                'chartRiesgo': 'Churn por Género',
+                'chartSubscription': 'Churn por Suscripción',
+                'chartRegion': 'Churn por Región',
+                'chartAge': 'Churn por Edad'
+            };
+            const chartTitle = chartTitles[id] || '';
+            const titleY = y + imgH + 20;
+            const chartTitleWidth = doc.getTextWidth(chartTitle);
+            doc.text(chartTitle, (pageWidth - chartTitleWidth) / 2, titleY);
+        }
+    }
+
+    doc.save(filename);
+}
+
+// Helper: cargar imagen y devolver data compatible para jsPDF (Image o dataURL)
+function loadImage(src) {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => resolve(img);
+        img.onerror = reject;
+        img.src = src;
+    });
+}
