@@ -349,7 +349,7 @@ async function exportChartsToPDF() {
     doc.save(filename);
 }
 
-// Helper: cargar imagen y devolver data compatible para jsPDF (Image o dataURL)
+// cargar imagen y devolver data compatible para jsPDF (Image o dataURL)
 function loadImage(src) {
     return new Promise((resolve, reject) => {
         const img = new Image();
@@ -359,3 +359,4 @@ function loadImage(src) {
         img.src = src;
     });
 }
+
